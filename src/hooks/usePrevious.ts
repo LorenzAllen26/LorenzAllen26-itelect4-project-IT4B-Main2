@@ -10,6 +10,9 @@ function usePrevious<T>(value: T): T | undefined {
     ref.current = value;
   }, [value]);
 
+  // Reading the previously committed ref value during render is the purpose
+  // of this hook. It is written only from the effect above.
+  // eslint-disable-next-line react-hooks/refs
   return ref.current;
 }
 
