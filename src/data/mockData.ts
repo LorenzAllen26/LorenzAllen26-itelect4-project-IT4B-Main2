@@ -20,6 +20,8 @@ export const mockItems: Item[] = [
   { id: 7, title: "Calculator", description: "Found under a desk in Room 101", location: "Room 101", reportedBy: student.id },
   { id: 8, title: "Yellow Cap", description: "Found near the parking lot", location: "Parking Lot", reportedBy: student.id },
   { id: 9, title: "Wireless Mouse", description: "Left on a table in the study area", location: "Study Area", reportedBy: student.id },
+  { id: 10, title: "Purple Lunch Box", description: "Found beside the cafeteria vending machines", location: "Cafeteria", reportedBy: student.id },
+  { id: 11, title: "Student ID Card", description: "Found near the main building security desk", location: "Main Building", reportedBy: student.id },
 ];
 
 export const initialClaim: Claim = {
