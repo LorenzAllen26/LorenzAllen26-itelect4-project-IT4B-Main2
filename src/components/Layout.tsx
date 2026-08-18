@@ -1,12 +1,14 @@
-// src/components/Layout.tsx
 import { NavLink, Outlet } from "react-router";
-import useToggle from "../hooks/useToggle";
-import useAuthStore from "../store/authStore";
-
+import { useAuthStore } from "../store/authStore";
+import { useUIStore } from "../store/useUIStore";
 function Layout() {
-  const [isDarkMode, toggleDarkMode] = useToggle(false);
-  const userName = useAuthStore((state) => state.userName);
+  // Requirement: Use 2nd Zustand store for UI state (darkMode)
+  const { darkMode, toggleDarkMode } = useUIStore();
+  
+  // Requirement: Fix user object access from AuthStore
+  const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const userName = user?.name ?? null;
 
   const base = "rounded px-3 py-1.5 text-sm";
   const activeLink = `${base} bg-blue-600 font-semibold text-white`;
@@ -16,7 +18,7 @@ function Layout() {
     isActive ? activeLink : idleLink;
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? "dark" : ""}`}>
+    <div className={`min-h-screen ${darkMode ? "dark" : ""}`}>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <nav className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
           <span className="mr-4 font-bold text-gray-900 dark:text-white">
@@ -32,7 +34,7 @@ function Layout() {
           ) : (
             <button
               onClick={logout}
-              className="rounded px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300"
+              className="rounded px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
             >
               Logout ({userName})
             </button>
@@ -42,7 +44,7 @@ function Layout() {
             onClick={toggleDarkMode}
             className="ml-auto rounded bg-gray-800 px-3 py-1.5 text-sm text-white dark:bg-gray-200 dark:text-gray-900"
           >
-            {isDarkMode ? "Light Mode" : "Dark Mode"}
+            {darkMode ? "Light Mode" : "Dark Mode"}
           </button>
         </nav>
 

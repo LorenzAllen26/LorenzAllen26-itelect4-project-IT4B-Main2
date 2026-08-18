@@ -1,99 +1,97 @@
-// src/pages/ItemsPage.tsx
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router";
-import type { Item } from "../types/index";
-import ItemCard from "../components/ItemCard";
-import usePrevious from "../hooks/usePrevious";
-import { mockItems } from "../data/mockData";
+import { api, type Item, type NewItem } from "../api/client";
 
-function ItemsPage() {
-  const [items, setItems] = useState<Item[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isError, setIsError] = useState<boolean>(false);
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const previousSearch = usePrevious(searchTerm);
+export default function ItemsPage() {
+  const queryClient = useQueryClient();
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState("Electronics");
 
-  useEffect(() => {
-    setTimeout(() => {
-      setItems(mockItems);
-      setIsLoading(false);
-    }, 500);
-  }, []);
+  const { data: items, isLoading, error } = useQuery<Item[], Error>({
+    queryKey: ["items"],
+    queryFn: () => api.getItems(),
+  });
 
-  useEffect(() => {
-    if (!isLoading) {
-      searchInputRef.current?.focus();
-    }
-  }, [isLoading]);
+  const createMutation = useMutation<Item, Error, NewItem>({
+    mutationFn: (newItem: NewItem) => api.createItem(newItem),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["items"] });
+      setName("");
+    },
+  });
 
-  const handleSearchChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ): void => setSearchTerm(e.target.value);
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    createMutation.mutate({ name, category, status: "Unclaimed" });
+  };
 
-  const filteredItems = items.filter((item) =>
-    item.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-3 py-12">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-gray-500 dark:text-gray-400 animate-pulse">
-          Loading items...
-        </p>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-4 text-red-700 dark:text-red-300 text-sm">
-        ⚠️ Could not load items.
-        <button
-          onClick={() => setIsError(false)}
-          className="block mt-3 px-3 py-1.5 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium"
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
+  if (isLoading) return <div className="p-6 text-gray-900 dark:text-gray-100">Loading items...</div>;
+  if (error) return <div className="p-6 text-red-500 dark:text-red-400">Error loading items.</div>;
 
   return (
-    <div className="flex flex-col gap-5">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Items</h2>
+    <div className="mx-auto max-w-4xl p-6">
+      <h1 className="mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white">
+        Items Collection
+      </h1>
 
-      <button
-        onClick={() => setIsError(true)}
-        className="self-start px-3 py-1.5 rounded-md bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-medium"
+      <form
+        onSubmit={handleSubmit}
+        className="mb-8 flex gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
       >
-        Simulate Error
-      </button>
+        <input
+          type="text"
+          placeholder="New Item Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="flex-1 rounded border border-gray-300 p-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+        />
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="rounded border border-gray-300 p-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+        >
+          <option value="Electronics">Electronics</option>
+          <option value="Personal Accessories">Personal Accessories</option>
+          <option value="Documents">Documents</option>
+        </select>
+        <button
+          type="submit"
+          disabled={createMutation.isPending}
+          className="rounded bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:bg-gray-400 dark:bg-blue-600 dark:hover:bg-blue-500"
+        >
+          {createMutation.isPending ? "Adding..." : "Add Item"}
+        </button>
+      </form>
 
-      <input
-        ref={searchInputRef}
-        value={searchTerm}
-        onChange={handleSearchChange}
-        placeholder="Search items..."
-        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
-      />
-
-      {previousSearch !== undefined && previousSearch !== searchTerm && (
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Previous search: "{previousSearch}"
-        </p>
-      )}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredItems.map((item, index) => (
-          <Link key={item.id} to={`/items/${item.id}`}>
-            <ItemCard item={item} variant={index === 0 ? "default" : "compact"} />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {items?.map((item) => (
+          <Link
+            key={item.id}
+            to={`/items/${item.id}`}
+            className="block rounded-lg border border-gray-200 bg-white p-5 text-center shadow-sm transition-colors hover:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-400"
+          >
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              {item.name}
+            </h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Category: {item.category}
+            </p>
+            <div className="mt-3">
+              <span
+                className={`inline-block rounded px-2.5 py-0.5 text-xs font-semibold ${
+                  item.status?.toLowerCase() === "claimed"
+                    ? "bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-300"
+                    : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                }`}
+              >
+                {item.status}
+              </span>
+            </div>
           </Link>
         ))}
       </div>
     </div>
   );
 }
-
-export default ItemsPage;

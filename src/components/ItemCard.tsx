@@ -1,4 +1,3 @@
-// src/components/ItemCard.tsx
 import type { Item } from "../types/index";
 
 interface ItemCardProps {
@@ -11,31 +10,48 @@ function ItemCard({ item, variant = "default" }: ItemCardProps) {
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm ${
+      className={`rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 ${
         isCompact ? "p-3" : "p-5"
       }`}
     >
-      <h3
-        className={`font-semibold text-gray-900 dark:text-gray-50 flex items-center gap-1 ${
-          isCompact ? "text-sm mb-1" : "text-base mb-3"
-        }`}
-      >
-        🧳 {item.title}
-      </h3>
-      {!isCompact && (
-        <p className="text-sm text-gray-500 dark:text-gray-400 my-1">
+      <div className="flex items-start justify-between gap-2">
+        <h3
+          className={`flex items-center gap-1 font-semibold text-gray-900 dark:text-gray-100 ${
+            isCompact ? "mb-1 text-sm" : "mb-3 text-base"
+          }`}
+        >
+          🧳 {item.title}
+        </h3>
+      </div>
+
+      {!isCompact && item.description && (
+        <p className="my-1 text-sm text-gray-600 dark:text-gray-300">
           {item.description}
         </p>
       )}
-      <p
-        className={`text-gray-500 dark:text-gray-400 my-1 ${
-          isCompact ? "text-xs" : "text-sm"
-        }`}
-      >
-        Location: {item.location}
-      </p>
-      {!isCompact && (
-        <p className="text-sm text-gray-500 dark:text-gray-400 my-1">
+
+      {item.category && (
+        <p
+          className={`my-1 text-gray-500 dark:text-gray-400 ${
+            isCompact ? "text-xs" : "text-sm"
+          }`}
+        >
+          Category: {item.category}
+        </p>
+      )}
+
+      {item.location && (
+        <p
+          className={`my-1 text-gray-500 dark:text-gray-400 ${
+            isCompact ? "text-xs" : "text-sm"
+          }`}
+        >
+          Location: {item.location}
+        </p>
+      )}
+
+      {!isCompact && item.reportedBy && (
+        <p className="my-1 text-sm text-gray-500 dark:text-gray-400">
           Reported by User #{item.reportedBy}
         </p>
       )}

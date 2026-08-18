@@ -1,44 +1,28 @@
-// src/pages/ItemDetailPage.tsx
-import { useParams, useNavigate } from "react-router";
-import ItemCard from "../components/ItemCard";
-import { mockItems } from "../data/mockData";
+import { useParams, Link } from "react-router";
+import { useQuery } from "@tanstack/react-query";
+import { api, type Item } from "../api/client";
 
-function ItemDetailPage() {
-  // Reads whatever is in the :id slot of the URL
+export default function ItemDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
 
-  // Turn that string into a real Item object
-  // (item.id is a number, so we convert id to a number before comparing)
-  const item = mockItems.find((i) => i.id === Number(id));
+  const { data: item, isLoading, error } = useQuery<Item, Error>({
+    queryKey: ["items", id],
+    queryFn: () => api.getItemById(id || ""),
+    enabled: Boolean(id),
+  });
 
-  // The URL is user input -- they can type anything. Handle that.
-  if (item === undefined) {
-    return (
-      <div className="rounded-lg bg-red-50 dark:bg-red-900/30 p-4 text-red-700 dark:text-red-300">
-        No item found with id "{id}".
-      </div>
-    );
-  }
+  if (isLoading) return <div className="p-6">Loading item details...</div>;
+  if (error || !item) return <div className="p-6 text-red-500">Item not found.</div>;
 
   return (
-    <div>
-      <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-white">
-        {item.title}
-      </h2>
-
-      <div className="max-w-sm">
-        <ItemCard item={item} />
-      </div>
-
-      <button
-        onClick={() => navigate("/items")}
-        className="mt-4 rounded bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-blue-700"
-      >
-        Back to Items
-      </button>
+    <div className="p-6 max-w-xl mx-auto border rounded bg-white mt-6 shadow-sm">
+      <Link to="/items" className="text-blue-600 hover:underline mb-4 inline-block">
+        &larr; Back to Items
+      </Link>
+      <h1 className="text-2xl font-bold">{item.name}</h1>
+      <p className="text-gray-600 mt-2">Category: {item.category}</p>
+      <p className="text-sm text-gray-500 mt-1">Status: {item.status}</p>
+      <p className="text-xs text-gray-400 mt-4">ID: {item.id}</p>
     </div>
   );
 }
-
-export default ItemDetailPage;
