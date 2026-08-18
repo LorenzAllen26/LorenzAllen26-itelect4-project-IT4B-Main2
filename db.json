@@ -1,0 +1,32 @@
+{
+  "items": [
+    {
+      "id": "1",
+      "name": "Found Wireless Earbuds",
+      "category": "Electronics",
+      "status": "Unclaimed"
+    },
+    {
+      "id": "2",
+      "name": "Blue Water Bottle",
+      "category": "Personal Accessories",
+      "status": "Claimed"
+    },
+    {
+      "id": "3",
+      "name": "Student ID Card",
+      "category": "Documents",
+      "status": "Unclaimed"
+    }
+  ],
+  "claims": [
+    {
+      "id": "1",
+      "itemId": "1",
+      "claimedBy": "lorenzallen26",
+      "notes": "This is mine — it has my initials on the case.",
+      "submittedAt": "2026-08-18T09:00:00.000Z",
+      "status": "Pending"
+    }
+  ]
+}

@@ -1,15 +1,30 @@
+import type { ClaimStatus } from "../types/index";
+
 export interface Item {
   id: string;
   name: string;
   category: string;
   status: string;
+  description?: string;
+  locationFound?: string;
+  dateFound?: string;
 }
 
 export type NewItem = Omit<Item, "id">;
 
+export interface ClaimRecord {
+  id: string;
+  itemId: string;
+  userId: string;
+  status: ClaimStatus;
+  notes: string;
+  submittedAt: string;
+}
+
 const BASE_URL = "http://localhost:3001";
 
 export const api = {
+  // Items API Methods
   getItems: async (): Promise<Item[]> => {
     const res = await fetch(`${BASE_URL}/items`);
     if (!res.ok) throw new Error("Failed to fetch items");
@@ -22,13 +37,25 @@ export const api = {
     return res.json();
   },
 
-  createItem: async (newItem: NewItem): Promise<Item> => {
+  createItem: async (item: NewItem): Promise<Item> => {
     const res = await fetch(`${BASE_URL}/items`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newItem),
+      body: JSON.stringify(item),
     });
     if (!res.ok) throw new Error("Failed to create item");
     return res.json();
+  },
+
+  // Claims API Methods
+  getClaims: async (): Promise<ClaimRecord[]> => {
+    const res = await fetch(`${BASE_URL}/claims`);
+    if (!res.ok) throw new Error("Failed to fetch claims");
+    const data = await res.json();
+
+    return data.map((claim: any) => ({
+      ...claim,
+      submittedAt: claim.submittedAt || claim.createdAt || new Date().toISOString(),
+    }));
   },
 };
