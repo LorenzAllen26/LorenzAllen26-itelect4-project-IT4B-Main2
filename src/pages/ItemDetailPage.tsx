@@ -29,18 +29,34 @@ export default function ItemDetailPage() {
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
-      <div className="max-w-xl mx-auto border border-gray-800 rounded bg-gray-900/80 p-6 mt-6 shadow-md">
-        <Link to="/items" className="text-blue-400 hover:underline mb-4 inline-block">
+      <div className="max-w-xl mx-auto border border-gray-800 rounded bg-gray-900 p-8 mt-6 shadow-md flex flex-col items-center">
+        <Link to="/items" className="text-blue-400 hover:underline mb-6 inline-block">
           &larr; Back to Items
         </Link>
-        <h1 className="text-2xl font-bold text-white">{item.name}</h1>
-        <p className="text-gray-300 mt-2">
-          Category: <span className="text-white">{item.category}</span>
+        
+        {/* Title - Forced White */}
+        <h1 
+          className="text-4xl font-bold mb-6 text-white" 
+          style={{ color: "#ffffff" }}
+        >
+          {/* @ts-ignore */}
+          {item.name || item.title}
+        </h1>
+        
+        {/* Category - Forced White */}
+        <p className="mt-2 text-lg text-white" style={{ color: "#ffffff" }}>
+          Category: <span className="font-bold">{item.category}</span>
         </p>
-        <p className="text-sm text-gray-400 mt-1">
-          Status: <span className="text-white">{item.status}</span>
+        
+        {/* Status - Forced White */}
+        <p className="mt-1 text-lg text-white" style={{ color: "#ffffff" }}>
+          Status: <span className="font-bold">{item.status}</span>
         </p>
-        <p className="text-xs text-gray-500 mt-4">ID: {item.id}</p>
+        
+        {/* ID - Forced White */}
+        <p className="mt-6 text-sm text-white" style={{ color: "#ffffff" }}>
+          ID: {item.id}
+        </p>
       </div>
     </div>
   );
