@@ -30,25 +30,25 @@ const BASE_URL =
 export const api = {
   // Items API Methods
   getItems: async (): Promise<Item[]> => {
-    const res = await fetch(`${BASE_URL}/items`);
+    const res = await fetch(`${BASE_URL}/api/items`).catch(() => fetch(`${BASE_URL}/items`));
     if (!res.ok) throw new Error("Failed to fetch items");
     return res.json();
   },
 
   getItemById: async (id: string): Promise<Item> => {
-    const res = await fetch(`${BASE_URL}/items/${id}`);
+    const res = await fetch(`${BASE_URL}/api/items/${id}`).catch(() => fetch(`${BASE_URL}/items/${id}`));
     if (!res.ok) throw new Error("Failed to fetch item");
     return res.json();
   },
 
   getItem: async (id: string): Promise<Item> => {
-    const res = await fetch(`${BASE_URL}/items/${id}`);
+    const res = await fetch(`${BASE_URL}/api/items/${id}`).catch(() => fetch(`${BASE_URL}/items/${id}`));
     if (!res.ok) throw new Error("Failed to fetch item");
     return res.json();
   },
 
   createItem: async (item: NewItem): Promise<Item> => {
-    const res = await fetch(`${BASE_URL}/items`, {
+    const res = await fetch(`${BASE_URL}/api/items`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(item),
@@ -58,7 +58,7 @@ export const api = {
   },
 
   updateItemStatus: async (id: string, status: string): Promise<Item> => {
-    const res = await fetch(`${BASE_URL}/items/${id}`, {
+    const res = await fetch(`${BASE_URL}/api/items/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
@@ -69,7 +69,7 @@ export const api = {
 
   // Claims API Methods
   createClaim: async (claim: NewClaim): Promise<ClaimRecord> => {
-    const res = await fetch(`${BASE_URL}/claims`, {
+    const res = await fetch(`${BASE_URL}/api/claims`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(claim),
@@ -79,7 +79,7 @@ export const api = {
   },
 
   getClaims: async (): Promise<ClaimRecord[]> => {
-    const res = await fetch(`${BASE_URL}/claims`);
+    const res = await fetch(`${BASE_URL}/api/claims`);
     if (!res.ok) throw new Error("Failed to fetch claims");
     const data: Array<ClaimRecord & { createdAt?: string }> = await res.json();
 
@@ -93,8 +93,8 @@ export const api = {
 export async function askAi(prompt: string): Promise<AiListing> {
   const token = localStorage.getItem("token");
 
-  // Endpoint updated to target /ai directly on backend domain
-  const res = await fetch(`${BASE_URL}/ai`, {
+  // Primary attempt at /api/ai
+  let res = await fetch(`${BASE_URL}/api/ai`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -102,6 +102,18 @@ export async function askAi(prompt: string): Promise<AiListing> {
     },
     body: JSON.stringify({ prompt }),
   });
+
+  // Fallback to /ai if /api/ai is not found (404)
+  if (res.status === 404) {
+    res = await fetch(`${BASE_URL}/ai`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ prompt }),
+    });
+  }
 
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as {
